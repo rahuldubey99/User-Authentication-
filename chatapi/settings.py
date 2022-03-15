@@ -89,8 +89,11 @@ REST_FRAMEWORK = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'djongo',
+        'NAME': 'chatapp',
+        'HOST':'mongodb+srv://rahul:Rahuldubey123@cluster0.o8rmc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
+        'USER':'rahul',
+        'PASSWORD':'Rahuldubey123'
     }
 }
 
