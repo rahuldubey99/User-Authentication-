@@ -89,11 +89,8 @@ REST_FRAMEWORK = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'chatapp',
-        'HOST':'mongodb+srv://rahul:Rahuldubey123@cluster0.o8rmc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
-        'USER':'rahul',
-        'PASSWORD':'Rahuldubey123'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -175,3 +172,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:9000",
 ]
+
+
+STATIC_URL = '/static/'
+# STATIC_FILES_DIRS = []
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / 'media'

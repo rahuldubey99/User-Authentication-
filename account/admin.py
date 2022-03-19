@@ -1,5 +1,5 @@
 from django.contrib import admin
-from account.models import User
+from account.models import User, UserDetails
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 
@@ -31,3 +31,8 @@ class UserModelAdmin(BaseUserAdmin):
     
 # Now register the new UserAdmin...
 admin.site.register(User, UserModelAdmin)
+
+
+@admin.register(UserDetails)
+class UserDetailsAdmin(admin.ModelAdmin):
+    list_display = ['id','user','date_of_birth','gender','profile', 'is_verified']

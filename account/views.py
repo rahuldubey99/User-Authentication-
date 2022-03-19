@@ -2,9 +2,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
-from rest_framework.permissions import IsAuthenticated 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import UpdateModelMixin
+from account.models import User, UserDetails 
 from account.renderers import UserRenderer
-from account.serializers import SendPasswordResetEmailSerializer, UserChangePasswordSerializer, UserLoginSerializer, UserPasswordResetSerializer, UserProfileSerializer, UserRegistrationSerializer
+from account.serializers import SendPasswordResetEmailSerializer, UserChangePasswordSerializer, UserLoginSerializer, UserPasswordResetSerializer, UserProfileSerializer, UserProfileUpdateSerializer, UserRegistrationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -45,12 +48,6 @@ class UserLoginView(APIView):
                 return Response({'errors':{'non_fields_errors':['email or password not valid']}}, status=status.HTTP_404_NOT_FOUND)
 
         
-class UserProfileView(APIView):
-    renderer_class = [UserRenderer]
-    permission_classes = [IsAuthenticated]
-    def get(self, request, format=None):
-        serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data,status=status.HTTP_200_OK)
 
 class UserChangePasswordView(APIView):
     renderer_class = [UserRenderer]
@@ -76,3 +73,69 @@ class UserPasswordResetView(APIView):
     serializer = UserPasswordResetSerializer(data=request.data, context={'uid':uid, 'token':token})
     serializer.is_valid(raise_exception=True)
     return Response({'msg':'Password Reset Successfully'}, status=status.HTTP_200_OK)
+
+# class UserDetails(APIView):
+#     renderer_classes = [UserRenderer]
+    
+#     def get(self,request,pk=None,format=None):
+#         print("User", request.user)
+            
+
+
+class UserProfileView(APIView):
+    renderer_class = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    def get(self, request, format=None):
+        serializer = UserProfileSerializer(request.user)
+        user  = User.objects.get(email=request.user)
+        user_details = UserDetails.objects.get(user=user)
+        # print('\n \n  \n  user', user.name,user.email,user.is_active,user.created_at,user.updated_at, serializer.data ,"\n \n ")
+        details = {"user_id":user_details.id,"name":user.name, "email":user.email, "is_active":user.is_active, "created_at":user.created_at, "updated_at":user.updated_at,"details":serializer.data}
+        return Response({ "details":details},status=status.HTTP_200_OK)
+
+    def post(self,request, format=None):
+        # profile = request.FILE('profile')
+        # print("\n profile",request.data['file'],"\n")
+        # print("\n profile",request.data['profile'],"\n")
+        serializer =  UserProfileSerializer(data=request.data,context={'user': request.user})
+        if serializer.is_valid(raise_exception=True):
+            return  Response(serializer.data, status = status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+    # def put(self, request,format=None):
+    #     user_details = UserDetails.objects.get(pk=1)
+    #     print("puting user details",user_details)
+    #     serializer = UserProfileSerializer(user_details,data=request.data,context={'user': request.user})
+    #     if serializer.is_valid(raise_exception=True):
+    #         serializer.save()
+    #         return Response({'msg':'Complete Data Update'}, status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+
+    # def patch(self, request,format=None):
+    #     user_details = UserDetails.objects.get(pk=1)
+    #     # user_details = 'hello'
+    #     print("patch user details",request.user)
+    #     print("patch user details",user_details)
+    #     serializer = UserProfileSerializer(user_details,data=request.data,context={'user': request.user}, partial=True)
+    #     if serializer.is_valid(raise_exception=True):
+    #         serializer.save()
+    #         return Response({'msg':'Complete Data Update'}, status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+        
+    def delete(self, request, format=None):
+        user_details = UserDetails.objects.get(user=request.user)
+        user_details.delete()
+        return Response({'msg':'Complete Data Delete'}, status=status.HTTP_200_OK)
+
+
+class UpdateUserDetails(GenericAPIView,UpdateModelMixin):
+    queryset = UserDetails.objects.all()
+    serializer_class = UserProfileUpdateSerializer
+
+    # def get_queryset(self):
+    #     print (" \n \n get_queryset \n \n", self.request.user.id)
+    #     return UserDetails.objects.filter(pk = self.request.user.id)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    def patch(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)

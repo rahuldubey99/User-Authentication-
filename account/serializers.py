@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from account.models import User
+from account.models import User, UserDetails
 from django.utils.encoding import smart_str, force_bytes,DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -34,8 +34,33 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['id','name','email']
+        model = UserDetails
+        fields = ['date_of_birth','gender','profile','is_verified']
+   
+    def validate(self, attrs):
+      user = self.context.get('user')
+      date_of_birth= attrs.get('date_of_birth')
+      gender = attrs.get('gender')
+      profile = attrs.get('profile')
+      is_verified = attrs.get('is_verified')
+      user_details = UserDetails(user=user)
+      if date_of_birth is not None:
+        user_details.date_of_birth = date_of_birth
+      if gender is not None:
+        user_details.gender = gender
+      if profile is not None:
+        user_details.profile = profile
+      if is_verified is not None:
+        user_details.is_verified = is_verified     
+      user_details.save()
+      return attrs
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDetails
+        fields = ['date_of_birth','gender','profile','is_verified']
+  
+        
 
 class UserChangePasswordSerializer(serializers.Serializer):
   password = serializers.CharField(max_length=255, style={'input_type':'password'}, write_only=True)
@@ -103,3 +128,6 @@ class UserPasswordResetSerializer(serializers.Serializer):
     except DjangoUnicodeDecodeError as identifier:
       PasswordResetTokenGenerator().check_token(user, token)
       raise serializers.ValidationError('Token is not Valid or Expired')
+    
+    
+  

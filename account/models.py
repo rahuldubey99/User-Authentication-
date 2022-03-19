@@ -71,3 +71,12 @@ class User(AbstractBaseUser):
         "is the user a member of staff?"
         return self.is_admin
     
+
+
+class UserDetails(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    date_of_birth = models.DateTimeField(blank=True,null=True)
+    gender = models.CharField(max_length=10,blank=True,null=True)
+    profile = models.ImageField(upload_to='profile', blank=True, null=True)
+    is_verified = models.BooleanField(default=False)
+    
