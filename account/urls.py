@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
-from .views import SendPasswordResetEmailView, UpdateUserDetails, UserChangePasswordView, UserLoginView, UserPasswordResetView, UserProfileView, UserRegistrationView
+from .views import AdminUserList, SendPasswordResetEmailView, UpdateUserDetails, UserChangePasswordView, UserLoginView, UserPasswordResetView, UserProfileView, UserRegistrationView
 urlpatterns = [
 path('register/',UserRegistrationView.as_view(), name='register'),
+path('adminuser/',AdminUserList.as_view(), name='adminuser'),
 path('login/',UserLoginView.as_view(), name='login'),
 path('profile/',UserProfileView.as_view(), name='profile'),
 path('profileupdate/<int:pk>/',UpdateUserDetails.as_view(), name='profileupdate'),

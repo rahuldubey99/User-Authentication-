@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "corsheaders",
+    'storages', 
     'rest_framework',
     'rest_framework_simplejwt',
     'account'
@@ -93,6 +94,21 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# DATABASES = {
+# "default": {
+#     "ENGINE": "djongo",
+#     "CLIENT": {
+#         "host": "mongodb+srv://rahul:rahul@cluster0.o8rmc.mongodb.net/?retryWrites=true&w=majority",
+#         "username": "rahul",
+#         "password": "rahul",
+#         "name": "chatapp",
+#         # 'ENFORCE_SCHEMA': False,
+#         "authMechanism": "SCRAM-SHA-1",
+#         # "authMechanism": "SCRAM-SHA-1",
+#     },
+# }}
 
 
 # Password validation
@@ -170,6 +186,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://example.com",
     "https://sub.example.com",
     "http://localhost:8080",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "http://127.0.0.1:9000",
 ]
 
@@ -178,3 +196,13 @@ STATIC_URL = '/static/'
 # STATIC_FILES_DIRS = []
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+
+# AWS S3 Configuration
+
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# AWS_S3_ACCESS_KEY_ID = "AKIAS25XUZOETG5P3M6A"
+# AWS_S3_SECRET_ACCESS_KEY = "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"
+# AWS_STORAGE_BUCKET_NAME = "profileimagechatapp"
+# AWS_QUERYSTRING_AUTH = False

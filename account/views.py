@@ -1,13 +1,14 @@
+import json
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.mixins import UpdateModelMixin
 from account.models import User, UserDetails 
 from account.renderers import UserRenderer
-from account.serializers import SendPasswordResetEmailSerializer, UserChangePasswordSerializer, UserLoginSerializer, UserPasswordResetSerializer, UserProfileSerializer, UserProfileUpdateSerializer, UserRegistrationSerializer
+from account.serializers import SendPasswordResetEmailSerializer, UserChangePasswordSerializer, UserLoginSerializer, UserPasswordResetSerializer, UserProfileSerializer, UserProfileUpdateSerializer, UserRegistrationSerializer, UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -23,6 +24,66 @@ def get_tokens_for_user(user):
 
 
 
+class AdminUserLists(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        users = User.objects.all()
+        print (" \n \n",type(users)," \n \n")
+        data = []
+        for user in users:
+            print ( user.id,user.name, user.email, user.created_at, user.updated_at, user.is_active,user.is_admin)
+            print("\n")
+            details = {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "joined_on": user.created_at,
+                "updated_at": user.updated_at,
+                "active":user.is_active,
+                "admin": user.is_admin
+                
+                
+            }
+            data.append(details)
+        print( data)
+        return data
+
+
+
+class AdminUserList(APIView):
+    renderer_class = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request,format=None):
+        users = User.objects.all()
+        # print (" \n \n",type(users)," \n \n")
+        data = []
+        for user in users:
+            # print ( user.id,user.name, user.email, user.created_at, user.updated_at, user.is_active,user.is_admin)
+            # print("\n")
+            profile = UserDetails.objects.get(id =1)
+            print("\n profile",profile.profile)
+            details = {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "joined_on": user.created_at,
+                "updated_at": user.updated_at,
+                "active":user.is_active,
+                "admin": user.is_admin,
+                "profile": profile.profile
+                
+                
+            }
+            
+            data.append(details)
+        # print( data)
+        return Response({"data": data}, status=status.HTTP_200_OK)
+
+
 class UserRegistrationView(APIView):
     renderer_class = [UserRenderer]
     def post(self, request, format=None):
@@ -31,7 +92,7 @@ class UserRegistrationView(APIView):
             user = serializer.save()
             token = get_tokens_for_user(user)
             return Response({'msg':'Registeration successfull', 'token':token}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+        return Response({"errors":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)    
 
 class UserLoginView(APIView):
     renderer_class = [UserRenderer]
@@ -86,12 +147,14 @@ class UserProfileView(APIView):
     renderer_class = [UserRenderer]
     permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
-        serializer = UserProfileSerializer(request.user)
-        user  = User.objects.get(email=request.user)
-        user_details = UserDetails.objects.get(user=user)
-        # print('\n \n  \n  user', user.name,user.email,user.is_active,user.created_at,user.updated_at, serializer.data ,"\n \n ")
-        details = {"user_id":user_details.id,"name":user.name, "email":user.email, "is_active":user.is_active, "created_at":user.created_at, "updated_at":user.updated_at,"details":serializer.data}
-        return Response({ "details":details},status=status.HTTP_200_OK)
+        if UserDetails.objects.filter(user=request.user).exists():
+            serializer = UserProfileSerializer(request.user)
+            user  = User.objects.get(email=request.user)
+            user_details = UserDetails.objects.get(user=user)
+            print('\n \n  \n  user', user.name,user.email,user.is_active,user.created_at,user.updated_at, serializer.data ,"\n \n ")
+            details = {"user_id":user_details.id,"name":user.name, "email":user.email, "is_active":user.is_active, "created_at":user.created_at, "updated_at":user.updated_at,"details":serializer.data}
+            return Response({ "details":details},status=status.HTTP_200_OK)
+        return Response({"msg":"doesn't exist","details":False})
 
     def post(self,request, format=None):
         # profile = request.FILE('profile')
